@@ -1,0 +1,41 @@
+version: "2"
+
+services:
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: php-7.4
+    volumes:
+      - .:/var/www/laravel
+    networks:
+      - laravel
+    depends_on :
+      - mysql
+  mysql:
+    image: mysql:latest
+    container_name: ${DB_HOST}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - laravel
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 8000:80
+      - 443:443
+    networks:
+      - laravel
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - php
+
+networks:
+  laravel:
+    driver: bridge
